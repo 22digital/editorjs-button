@@ -1,3 +1,7 @@
+button {
+    cursor: pointer;
+}
+
 .cdx-buttonlink {
     position: relative;
     display: flex;
@@ -39,7 +43,8 @@
 }
 
 .cdx-buttonlink__link {
-    /* no styles */
+    display: flex;
+    text-decoration: none !important;
 }
 
 .cdx-buttonlink__title {

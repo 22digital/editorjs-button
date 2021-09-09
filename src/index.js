@@ -9,35 +9,44 @@ require('./index.css').toString();
 import ToolboxIcon from '../assets/toolbox.svg';
 
 /**
- * @class ButtonLink
- * @classdesc ButtonLink Tool for Editor.js
+ * @class Button
+ * @classdesc Button Tool for Editor.js
  * @property {ButtonLinkData} data - Warning Tool`s input and output data
  * @property {object} api - Editor.js API instance
  *
  * @typedef {object} ButtonLinkData
- * @description ButtonLink Tool`s input and output data
+ * @description Button Tool`s input and output data
  * @property {string} link - buttonLink`s link
  *
  * @typedef {object} ButtonLinkConfig
- * @description ButtonLink Tool`s initial configuration
+ * @description Button Tool`s initial configuration
  * @property {string} linkPlaceholder - placeholder to show in buttonLink`s link input
  */
-export default class ButtonLink {
+export default class Button {
     /**
      * Get Toolbox settings
      *
      * @public
-     * @return {string}
+     * @return {{icon, title: string}}
      */
     static get toolbox() {
         return {
             icon: ToolboxIcon,
-            title: 'ButtonLink'
+            title: 'Button'
         };
     }
 
     /**
-     * Allow to press Enter inside the ButtonLink
+     * Returns true to notify the core that read-only mode is supported.
+     *
+     * @return {boolean}
+     */
+    static get isReadOnlySupported() {
+        return true;
+    }
+
+    /**
+     * Allow to press Enter inside the Button
      * @public
      * @returns {boolean}
      */
@@ -72,7 +81,7 @@ export default class ButtonLink {
      * @returns {string}
      */
     static get DEFAULT_TITLE_PLACEHOLDER() {
-        return 'Title';
+        return 'Button Title';
     }
 
     /**
@@ -82,7 +91,7 @@ export default class ButtonLink {
      * @returns {string}
      */
     static get DEFAULT_LINK_PLACEHOLDER() {
-        return 'Link';
+        return 'Button Link';
     }
 
     /**
@@ -138,7 +147,7 @@ export default class ButtonLink {
     }
 
     /**
-     * ButtonLink Tool`s styles
+     * Button Tool`s styles
      *
      * @returns {Object}
      */
@@ -158,19 +167,21 @@ export default class ButtonLink {
     }
 
     /**
-     * Render plugin`s main Element and fill it with saved data
+     * Render plugin's main Element and fill it with saved data.
      *
-     * @param {ButtonLinkData} data — previously saved data
-     * @param {ButtonLinkConfig} config — user config for Tool
-     * @param {Object} api - Editor.js API
+     * @param {ButtonLinkData}   data     Previously saved data
+     * @param {ButtonLinkConfig} config   User config for Tool
+     * @param {Object}           api      Editor.js API
+     * @param {boolean}          readOnly Read only property
      */
-    constructor({data, config, api}) {
+    constructor({data, config, api, readOnly}) {
         this.api = api;
+        this.readOnly = readOnly;
 
-        this.defaultType = config.buttonLinkType || ButtonLink.DEFAULT_TYPE;
-        this.defaultAlignment = config.buttonLinkAlignment || ButtonLink.DEFAULT_ALIGNMENT;
-        this.titlePlaceholder = config.titlePlaceholder || ButtonLink.DEFAULT_TITLE_PLACEHOLDER;
-        this.linkPlaceholder = config.linkPlaceholder || ButtonLink.DEFAULT_LINK_PLACEHOLDER;
+        this.defaultType = config.buttonLinkType || Button.DEFAULT_TYPE;
+        this.defaultAlignment = config.buttonLinkAlignment || Button.DEFAULT_ALIGNMENT;
+        this.titlePlaceholder = config.titlePlaceholder || Button.DEFAULT_TITLE_PLACEHOLDER;
+        this.linkPlaceholder = config.linkPlaceholder || Button.DEFAULT_LINK_PLACEHOLDER;
 
         this.data = {
             type: data.type || this.defaultType,
@@ -220,12 +231,34 @@ export default class ButtonLink {
     }
 
     /**
-     * Create ButtonLink Tool container with inputs
+     * Create Button Tool container with inputs
      *
      * @returns {Element}
      */
     render() {
         const container = this._make('div', [this.CSS.baseClass, this.CSS.wrapper]);
+
+        if (this.readOnly) {
+            const link = this._make('a', [this.CSS.link], {
+                href: this.data.link,
+                type: 'button',
+            });
+
+            const button = this._make('button', [this.CSS.input, this.CSS.title, this.data.type, this.data.alignment], {
+                contentEditable: false,
+                innerHTML: this.data.title,
+                role: 'button',
+            });
+
+            button.dataset.placeholder = this.data.title;
+            link.dataset.placeholder = this.data.link;
+
+            const el = container.appendChild(link);
+            el.appendChild(button);
+
+            return el;
+        }
+
         const title = this._make('div', [this.CSS.input, this.CSS.title, this.data.type, this.data.alignment], {
             contentEditable: true,
             innerHTML: this.data.title
@@ -248,7 +281,7 @@ export default class ButtonLink {
 
 
     /**
-     * Create Block's settings block
+     * Create Block's settings block.
      *
      * @returns {HTMLElement}
      */
@@ -379,7 +412,7 @@ export default class ButtonLink {
     }
 
     /**
-     * Extract ButtonLink data from ButtonLink Tool element
+     * Extract Button data from Button Tool element
      *
      * @param {HTMLDivElement} buttonLinkElement - element to save
      * @returns {object}
@@ -421,7 +454,7 @@ export default class ButtonLink {
     }
 
     /**
-     * Sanitizer config for ButtonLink Tool saved data
+     * Sanitizer config for Button Tool saved data
      * @return {Object}
      */
     static get sanitize() {
